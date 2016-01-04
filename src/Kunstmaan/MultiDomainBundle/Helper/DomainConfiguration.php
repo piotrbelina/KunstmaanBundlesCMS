@@ -3,13 +3,17 @@
 namespace Kunstmaan\MultiDomainBundle\Helper;
 
 use Kunstmaan\NodeBundle\Entity\Node;
-use Kunstmaan\NodeBundle\Helper\DomainConfiguration as BaseDomainConfiguration;
+use Kunstmaan\AdminBundle\Helper\DomainConfiguration as BaseDomainConfiguration;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class DomainConfiguration extends BaseDomainConfiguration
 {
     const OVERRIDE_HOST = '_override_host';
+
+    /**
+     * @var Node
+     */
+    protected $rootNode = null;
 
     /**
      * @var array
@@ -27,10 +31,13 @@ class DomainConfiguration extends BaseDomainConfiguration
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
+
         $this->hosts = $container->getParameter('kunstmaan_multi_domain.hosts');
         foreach ($this->hosts as $host => $hostInfo) {
-            foreach ($hostInfo['aliases'] as $alias) {
-                $this->aliases[$alias] = $host;
+            if (isset($hostInfo['aliases'])) {
+                foreach ($hostInfo['aliases'] as $alias) {
+                    $this->aliases[$alias] = $host;
+                }
             }
         }
     }
@@ -158,6 +165,19 @@ class DomainConfiguration extends BaseDomainConfiguration
     }
 
     /**
+     * Return (optional) extra config settings for the locales for the current host
+     */
+    public function getLocalesExtraData()
+    {
+        $host = $this->getHost();
+        if (!isset($this->hosts[$host]['locales_extra'])) {
+            return parent::getLocalesExtraData();
+        }
+
+        return $this->hosts[$host]['locales_extra'];
+    }
+
+    /**
      * @return bool
      */
     protected function hasHostOverride()
@@ -166,15 +186,20 @@ class DomainConfiguration extends BaseDomainConfiguration
 
         return !is_null($request) &&
             $this->isAdminRoute($request->getRequestUri()) &&
-            $request->cookies->has(self::OVERRIDE_HOST);
+            $request->hasPreviousSession() &&
+            $request->getSession()->has(self::OVERRIDE_HOST);
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     protected function getHostOverride()
     {
-        return $this->getMasterRequest()->cookies->get(self::OVERRIDE_HOST);
+        if (null !== ($request = $this->getMasterRequest()) && $request->hasPreviousSession()) {
+            return $request->getSession()->get(self::OVERRIDE_HOST);
+        }
+
+        return null;
     }
 
     /**

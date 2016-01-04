@@ -2,9 +2,8 @@
 
 namespace Kunstmaan\NodeSearchBundle\Search;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Kunstmaan\AdminBundle\Entity\BaseUser;
-use Kunstmaan\NodeBundle\Helper\DomainConfigurationInterface;
+use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 
 /**
@@ -19,20 +18,12 @@ class NodeSearcher extends AbstractElasticaSearcher
     /** @var SecurityContextInterface */
     private $securityContext = null;
 
-    /** @var EntityManagerInterface */
-    private $em;
-
     /** @var DomainConfigurationInterface */
     private $domainConfiguration;
 
     public function setSecurityContext(SecurityContextInterface $securityContext)
     {
         $this->securityContext = $securityContext;
-    }
-
-    public function setEntityManager(EntityManagerInterface $em)
-    {
-        $this->em = $em;
     }
 
     public function setDomainConfiguration(DomainConfigurationInterface $domainConfiguration)
@@ -111,6 +102,20 @@ class NodeSearcher extends AbstractElasticaSearcher
      */
     protected function applySecurityContext($elasticaQueryBool)
     {
+        $roles = $this->getCurrentUserRoles();
+
+        $elasticaQueryRoles = new \Elastica\Query\Terms();
+        $elasticaQueryRoles
+            ->setTerms('view_roles', $roles)
+            ->setMinimumMatch(1);
+        $elasticaQueryBool->addMust($elasticaQueryRoles);
+    }
+
+    /**
+     * @return array
+     */
+    protected function getCurrentUserRoles()
+    {
         $roles = array();
         if (!is_null($this->securityContext)) {
             $user = $this->securityContext->getToken()->getUser();
@@ -124,10 +129,6 @@ class NodeSearcher extends AbstractElasticaSearcher
             $roles[] = 'IS_AUTHENTICATED_ANONYMOUSLY';
         }
 
-        $elasticaQueryRoles = new \Elastica\Query\Terms();
-        $elasticaQueryRoles
-            ->setTerms('view_roles', $roles)
-            ->setMinimumMatch(1);
-        $elasticaQueryBool->addMust($elasticaQueryRoles);
+        return $roles;
     }
 }

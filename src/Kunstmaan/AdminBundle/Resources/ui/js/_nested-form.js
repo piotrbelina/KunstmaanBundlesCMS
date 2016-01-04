@@ -2,7 +2,7 @@ var kunstmaanbundles = kunstmaanbundles || {};
 
 kunstmaanbundles.nestedForm = (function(window, undefined) {
 
-    var init, setupForm,
+    var init, reInit, setupForm,
         addNewItem, delItem,
         addNewBtn, addDelBtn, showOrHideActions,
         updateSortkeys;
@@ -12,7 +12,7 @@ kunstmaanbundles.nestedForm = (function(window, undefined) {
     var delButtonHtml = '<button type="button" class="js-nested-form__del-btn btn--raise-on-hover nested-form__item__header__actions__action nested-form__item__header__actions__action--del"><i class="fa fa-trash-o"></i></button>';
 
 
-    init = function() {
+    init = reInit = function() {
         $('.js-nested-form').each(function() {
             var $form = $(this),
                 initialized = $form.data('initialized'),
@@ -172,6 +172,9 @@ kunstmaanbundles.nestedForm = (function(window, undefined) {
         // Init new colorpickers
         kunstmaanbundles.colorpicker.init();
 
+        // Init new datepickers
+        kunstmaanbundles.datepicker.reInit();
+
         // Init Ajax Modals
         kunstmaanbundles.ajaxModal.resetAjaxModals();
 
@@ -223,7 +226,8 @@ kunstmaanbundles.nestedForm = (function(window, undefined) {
 
 
     return {
-        init: init
+        init: init,
+        reInit: reInit
     };
 
 }(window));

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% spaceless %}<!DOCTYPE html>
 {% set htmlLocale = app.request.locale|default(defaultlocale)|slice(0,2) %}
 <!--[if lte IE 9]> <html class="no-js lt-ie9" lang="{{ htmlLocale }}"> <![endif]-->
 <!--[if gt IE 9]><!--> <html lang="{{ htmlLocale }}"> <!--<![endif]-->
@@ -85,6 +85,9 @@
     {% include '<%= bundle.getName() %>:Layout:_js_footer.html.twig' %}
 <% if demosite %>
     </div>
+
+{% block footerscripts %}{% endblock %}
 <% endif %>
 </body>
 </html>
+{% endspaceless %}

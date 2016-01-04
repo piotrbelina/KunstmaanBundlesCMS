@@ -1,8 +1,6 @@
 <?php
 
-namespace Kunstmaan\NodeBundle\Helper;
-
-use Kunstmaan\NodeBundle\Entity\Node;
+namespace Kunstmaan\AdminBundle\Helper;
 
 interface DomainConfigurationInterface
 {
@@ -49,10 +47,10 @@ interface DomainConfigurationInterface
     public function getBackendLocales();
 
     /**
-     * Return the root node for the current host (will always be null when the
+     * Return the root node for the current host (should always be null when the
      * root node does not exist OR you don't use the MultiDomainBundle).
      *
-     * @return Node
+     * @return Kunstmaan\NodeBundle\Entity\Node|null
      */
     public function getRootNode();
 
@@ -70,4 +68,12 @@ interface DomainConfigurationInterface
      * @return mixed
      */
     public function getExtraData();
+
+    /**
+     * Return optional extra locales data for the current host from the multi domain
+     * configuration. Returns an empty array if no data was defined...
+     *
+     * @return mixed
+     */
+    public function getLocalesExtraData();
 }

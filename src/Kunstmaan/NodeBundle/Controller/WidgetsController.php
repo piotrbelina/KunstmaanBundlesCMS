@@ -3,7 +3,6 @@
 namespace Kunstmaan\NodeBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
-use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionDefinition;
 use Kunstmaan\NodeBundle\Entity\StructureNode;
 use Kunstmaan\NodeBundle\Helper\Menu\SimpleTreeView;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
@@ -64,7 +63,7 @@ class WidgetsController extends Controller
                 PermissionMap::PERMISSION_VIEW,
                 $this->get('kunstmaan_admin.acl.native.helper'),
                 true,
-                $this->get('kunstmaan_node.domain_configuration')->getRootNode()
+                $this->get('kunstmaan_admin.domain_configuration')->getRootNode()
             );
 
         $simpleTreeView = new SimpleTreeView();

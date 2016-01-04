@@ -68,7 +68,7 @@ class PageBuilder implements BuilderInterface
 
         $rootNode = null;
         foreach ($fixture->getTranslations() as $language => $data) {
-            if ($rootNode == null) {
+            if ($rootNode === null) {
                 $page = $entity;
                 $rootNode = $this->createRootNode($page, $language, $internalName, $fixtureParams);
                 $this->manager->persist($rootNode);
@@ -91,7 +91,7 @@ class PageBuilder implements BuilderInterface
 
             $this->populator->populate($translationNode, $data);
             $this->populator->populate($page, $data);
-            if ($translationNode->getSlug() == null && $rootNode->getParent() !== null) {
+            if ($translationNode->getSlug() === null && $rootNode->getParent() !== null) {
                 $translationNode->setSlug($this->slugifier->slugify($translationNode->getTitle()));
             }
             $this->ensureUniqueUrl($translationNode, $page);
@@ -205,14 +205,14 @@ class PageBuilder implements BuilderInterface
         $translationWithSameUrl = $this->nodeTranslationRepo->getNodeTranslationForUrl($translation->getUrl(), $translation->getLang(), false, $translation);
 
         if ($translationWithSameUrl instanceof NodeTranslation) {
-            $translation->setSlug($this->slugifier->slugify($this->IncrementString($translation->getSlug())));
+            $translation->setSlug($this->slugifier->slugify($this->incrementString($translation->getSlug())));
             $this->ensureUniqueUrl($translation, $page);
         }
 
         return $translation;
     }
 
-    private static function IncrementString($string, $append = '-v')
+    private static function incrementString($string, $append = '-v')
     {
         $finalDigitGrabberRegex = '/\d+$/';
         $matches = array();

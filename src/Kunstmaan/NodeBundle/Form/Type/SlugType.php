@@ -5,12 +5,27 @@ namespace Kunstmaan\NodeBundle\Form\Type;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\AbstractType;
+use Kunstmaan\UtilitiesBundle\Helper\SlugifierInterface;
 
 /**
  * Sype
  */
 class SlugType extends AbstractType
 {
+
+    /**
+     * @var SlugifierInterface
+     */
+	private $slugifier;
+
+    /**
+     *
+     * @param SlugifierInterface $slugifier The slugifier
+     */
+    public function __construct(SlugifierInterface $slugifier)
+    {
+        $this->slugifier = $slugifier;
+    }
 
     /**
      * @return string
@@ -34,7 +49,7 @@ class SlugType extends AbstractType
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
             $nodeTranslation = $form->getParent()->getData();
-            $view->vars['reset'] = $nodeTranslation->getSlug();
+            $view->vars['reset'] = $this->slugifier->slugify($nodeTranslation->getTitle(), '');
             $parentNode = $nodeTranslation->getNode()->getParent();
             if ($parentNode !== null) {
                 $nodeTranslation = $parentNode->getNodeTranslation($nodeTranslation->getLang(), true);

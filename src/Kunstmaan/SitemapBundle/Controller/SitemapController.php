@@ -2,8 +2,6 @@
 
 namespace Kunstmaan\SitemapBundle\Controller;
 
-use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
-use Kunstmaan\NodeBundle\Helper\NodeMenu;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -55,7 +53,7 @@ class SitemapController extends Controller
      */
     public function sitemapIndexAction(Request $request)
     {
-        $locales = $this->get('kunstmaan_node.domain_configuration')
+        $locales = $this->get('kunstmaan_admin.domain_configuration')
             ->getBackendLocales();
 
         return array(

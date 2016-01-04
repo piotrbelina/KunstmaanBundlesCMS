@@ -20,8 +20,6 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  */
 class GenerateBundleCommand extends GeneratorCommand
 {
-    private $generator;
-
     /**
      * @see Command
      */
@@ -85,7 +83,7 @@ EOT
             $bundle = strtr($namespace, array('\\' => ''));
         }
         $bundle = Validators::validateBundleName($bundle);
-        $dir = Validators::validateTargetDir($input->getOption('dir'), $bundle, $namespace);
+        $dir = $this::validateTargetDir($input->getOption('dir'), $bundle, $namespace);
         $format = 'yml';
 
         $questionHelper->writeSection($output, 'Bundle generation');
@@ -164,7 +162,7 @@ EOT
         $output->writeln(array('', 'The bundle can be generated anywhere. The suggested default directory uses', 'the standard conventions.', '',));
         $question = new Question($questionHelper->getQuestion('Target directory', $dir), $dir);
         $question->setValidator(function ($dir) use ($bundle, $namespace) {
-            return Validators::validateTargetDir($dir, $bundle, $namespace);
+            return $this::validateTargetDir($dir, $bundle, $namespace);
         });
         $dir = $questionHelper->ask($input, $output, $question);
         $input->setOption('dir', $dir);
@@ -269,6 +267,21 @@ EOT
 
     protected function createGenerator()
     {
-        return new BundleGenerator($this->getContainer()->get('filesystem'));
+        return new BundleGenerator();
     }
+
+    /**
+     * Validation function taken from <3.0 release of Sensio Generator bundle
+     *
+     * @param string $dir The target directory
+     * @param string $bundle The bundle name
+     * @param string $namespace The namespace
+     *
+     * @return string
+     */
+    public static function validateTargetDir($dir, $bundle, $namespace)
+    {
+        // add trailing / if necessary
+        return '/' === substr($dir, -1, 1) ? $dir : $dir.'/';
+    }    
 }

@@ -2,7 +2,13 @@ var kunstmaanbundles = kunstmaanbundles || {};
 
 kunstmaanbundles.pagepartEditor = (function(window) {
 
-    var init, addPagePart, editPagePart, deletePagePart, movePagePartUp, movePagePartDown;
+    var events = {
+        add: [],
+        edit: [],
+        delete: []
+    };
+
+    var init, addPagePart, editPagePart, deletePagePart, movePagePartUp, movePagePartDown, subscribeToEvent, unSubscribeToEvent, executeEvent;
 
     init = function() {
         var $body = $('body');
@@ -65,11 +71,31 @@ kunstmaanbundles.pagepartEditor = (function(window) {
             success: function (data) {
                 // Add PP
                 var firstSelect = $select.hasClass('js-add-pp-select--first');
+                var elem;
                 if (firstSelect) {
-                    $('#parts-' + context).prepend(data);
+                    elem = $('#parts-' + context).prepend(data);
                 } else {
-                    $select.closest('.js-sortable-item').after(data);
+                    elem = $select.closest('.js-sortable-item').after(data);
                 }
+
+                // Create a temporary node of the new PP
+                var $temp = $('<div>');
+                $temp.append(data);
+
+                // Check if some javascript needs to be reinitialised for this PP
+                $temp.find('*[data-reinit-js]').each(function() {
+                    // Get modules from data attribute
+                    var modules = $(this).data('reinit-js');
+
+                    if (modules) {
+                        for (var i = 0; i < modules.length; i++) {
+                            // Check if there really is a module with the given name and it if has a public reInit function
+                            if (typeof kunstmaanbundles[modules[i]] === 'object' && typeof kunstmaanbundles[modules[i]].reInit === 'function') {
+                                kunstmaanbundles[modules[i]].reInit();
+                            }
+                        }
+                    }
+                });
 
                 // Remove Loading
                 kunstmaanbundles.appLoading.removeLoading();
@@ -77,26 +103,13 @@ kunstmaanbundles.pagepartEditor = (function(window) {
                 // Enable leave-page modal
                 kunstmaanbundles.checkIfEdited.edited();
 
-                // Enable new Rich Editors
-                kunstmaanbundles.richEditor.init();
-
-                // Init new tooltips
-                kunstmaanbundles.tooltip.init();
-
-                // Init new colorpickers
-                kunstmaanbundles.colorpicker.init();
-
                 // Reinit custom selects
                 kunstmaanbundles.advancedSelect.init();
 
-                // Reinit nested forms
-                kunstmaanbundles.nestedForm.init();
-
-                // Rest ajax-modals
+                // Reset ajax-modals
                 kunstmaanbundles.ajaxModal.resetAjaxModals();
 
-                // Reinitialise the datepickers
-                kunstmaanbundles.datepicker.reInitialise();
+                executeEvent('add')
             }
         });
 
@@ -117,13 +130,16 @@ kunstmaanbundles.pagepartEditor = (function(window) {
         $('#' + targetId + '-preview-view').addClass('pp__view__block--hidden');
 
         // Add edit active class
-        $('#pp-' + targetId).addClass('pp--edit-active');
+        var container = $('#pp-' + targetId);
+        container.addClass('pp--edit-active');
 
         // Reinit custom selects
         kunstmaanbundles.advancedSelect.init();
 
         // Set Active Edit
         window.activeEdit = targetId;
+
+        executeEvent('edit', container);
     };
 
 
@@ -148,6 +164,7 @@ kunstmaanbundles.pagepartEditor = (function(window) {
         // Hide delete modal
         $('#delete-pagepart-modal-' + targetId).modal('hide');
         $('body').removeClass('modal-open');
+        executeEvent('delete', $container);
     };
 
 
@@ -185,10 +202,28 @@ kunstmaanbundles.pagepartEditor = (function(window) {
         // Set Active Edit
         window.activeEdit = targetId;
     };
-
-
+    // subsribe to an event.
+    subscribeToEvent = function(eventName, callBack) {
+        if (!events.hasOwnProperty(eventName)) {
+            throw new Error("PagePartEditor: I cannot let you subscribe to the unknown event named: " + eventName);
+        }
+        events[eventName].push(callBack);
+    };
+    unSubscribeToEvent = function(eventName, callback) {
+        if (!events.hasOwnProperty(eventName)) {
+            throw new Error("PagePartEditor: I cannot let you unSubscribe to the unknown event named: " + eventName);
+        }
+        events = events.filter(function(cb) { return cb !== callback});
+    };
+    executeEvent = function(eventName, target) {
+        events[eventName].forEach(function(cb) {
+            cb({target: target})
+        })
+    };
     return {
-        init: init
+        init: init,
+        subscribeToEvent: subscribeToEvent,
+        unSubscribeToEvent: unSubscribeToEvent
     };
 
 }(window));

@@ -4,7 +4,6 @@ namespace Kunstmaan\MultiDomainBundle\Controller;
 
 use Kunstmaan\MultiDomainBundle\Helper\DomainConfiguration;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -27,22 +26,20 @@ class SiteSwitchController extends Controller
      */
     public function switchAction(Request $request)
     {
-        $domainConfiguration = $this->get('kunstmaan_node.domain_configuration');
+        $domainConfiguration = $this->get('kunstmaan_admin.domain_configuration');
         $host = $request->query->get('host');
         $hosts = $domainConfiguration->getHosts();
         if (!in_array($host, $hosts)) {
             throw $this->createNotFoundException('Invalid host specified');
         }
 
-        $request->cookies->set(DomainConfiguration::OVERRIDE_HOST, $host);
-        $defaultLocale = $this->get('kunstmaan_node.domain_configuration')->getDefaultLocale();
+        $session = $request->getSession();
+        $session->set(DomainConfiguration::OVERRIDE_HOST, $host);
+        $defaultLocale = $this->get('kunstmaan_admin.domain_configuration')->getDefaultLocale();
 
         $response = new RedirectResponse(
             $this->get('router')->generate('KunstmaanAdminBundle_homepage', array('_locale' => $defaultLocale))
         );
-
-        $cookie = new Cookie(DomainConfiguration::OVERRIDE_HOST, $host);
-        $response->headers->setCookie($cookie);
 
         return $response;
     }

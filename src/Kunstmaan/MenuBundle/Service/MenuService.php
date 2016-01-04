@@ -3,8 +3,8 @@
 namespace Kunstmaan\MenuBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Kunstmaan\AdminBundle\Helper\DomainConfigurationInterface;
 use Kunstmaan\MenuBundle\Entity\Menu;
-use Kunstmaan\NodeBundle\Helper\DomainConfigurationInterface;
 
 class MenuService
 {
@@ -24,7 +24,7 @@ class MenuService
     private $em;
 
     /**
-     * @param array  $menuNames
+     * @param array $menuNames
      * @param DomainConfigurationInterface $domainConfiguration
      * @param EntityManager $em
      */
@@ -40,7 +40,7 @@ class MenuService
      */
     public function makeSureMenusExist()
     {
-        $locales = $this->getLocales();
+        $locales = array_unique($this->getLocales());
         $required = array();
 
         foreach ($this->menuNames as $name) {
